@@ -35,38 +35,28 @@ public class GameListener extends Thread {
     }
 
     
-    public byte[] recvMsg() {
-        byte[] msg = new byte[100];
-        
+    public void recvMsg() {
+        byte[] msg = new byte[1000];
         try {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
-            working_socket.receive(packet);
-            msg = packet.getData();
+            working_socket.receive(packet);          
+            String msgS = new String(packet.getData()).trim();
+            String[] userInfo = msgS.split(",");
             
-            System.out.println("O usuário " + msg[0] + " mandou as coordenadas: \n");
-            System.out.println("X recebido em valor byte: " + msg[1]);
-            System.out.println("Y recebido em valor byte: " + msg[2] + "\n");
+            System.out.println("------- THREAD CLIENTE -------" + "\n" + 
+                               "Cliente: " + userInfo[0] + "\n" +
+                               "X: " + userInfo[1] + "\n" +
+                               "Y: " + userInfo[2] + "\n" + 
+                               "------------------------------\n");
             
-            if (players != null) {
-                for (PlayerModel p : players) {
-                    if(p.getUserNumber() == msg[0]){
-                        p.setUser_x(msg[1]);
-                        p.setUser_y(msg[2]);
-                    }
-                    if(players.isEmpty()){
-                        players.add(new PlayerModel(msg[0],msg[1],msg[2]));
-                    }
-                }
-            }
-            
+            Game.attEnemy(new PlayerModel(userInfo[0],userInfo[1],userInfo[2]));
                     
+            
         } catch (Exception err) {
             JOptionPane.showMessageDialog(null, err.getMessage(), null,
                     JOptionPane.PLAIN_MESSAGE, null);
         }
-        return msg;
     }
-
     
     void close() {
         try {

@@ -10,52 +10,33 @@ package game_package;
  */
 public class PlayerModel {
 
-    private byte userNumber;
+    private String userNumber;
+    private String user_x;
+    private String user_y;
 
-    private byte user_x;
-    private byte user_y;
-
-    public PlayerModel(byte n, byte x, byte y) {
+    public PlayerModel(String n, String x, String y) {
         userNumber = n;
         user_x = x;
         user_y = y;
     }
 
-    public byte getUserNumber() {
+    public String getUserNumber() {
         return userNumber;
     }
 
-    public byte getUser_x() {
+    public String getUser_x() {
         return user_x;
     }
 
-    public byte getUser_y() {
+    public String getUser_y() {
         return user_y;
     }
     
-    public String getConvertedNumber(){
-        Byte b = userNumber;
-        String resp = b.toString();
-        return resp;
+    public void setUser_x(String x){
+        this.user_x = x;        
     }
     
-    public int getConvertedX(){
-        Byte b = user_x;
-        int resp = b.intValue();
-        return resp;
-    }
-    
-    public int getConvertedY(){
-        Byte b = user_y;
-        int resp = b.intValue();
-        return resp;
-    }
-
-    public void setUser_x(byte user_x) {
-        this.user_x = user_x;
-    }
-
-    public void setUser_y(byte user_y) {
-        this.user_y = user_y;
+    public void setUser_y(String y){
+        this.user_y = y;        
     }
 }

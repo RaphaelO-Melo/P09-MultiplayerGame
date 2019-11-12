@@ -12,11 +12,16 @@ import java.awt.List;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,8 +29,8 @@ import javax.swing.JPanel;
 public class Game extends JPanel {
 
     static private Integer username;
-    static private int x = 0;
-    static private int y = 0;
+    static private Integer x = 0;
+    static private Integer y = 0;
 
     static private  MulticastSocket working_socket;
     static final int MULTICAST_PORT = 4447;
@@ -62,11 +67,11 @@ public class Game extends JPanel {
         g.setColor(Color.black);
         //Desenha o nome do usuario
         
-        System.out.println("Lista de players: " + players.toString());
-        for(PlayerModel p : players){
-            g.drawString(p.getConvertedNumber(), p.getConvertedX(), p.getConvertedY());
-        }
+        
         g.drawString(username.toString(), x, y);
+        for(PlayerModel p : players){
+            g.drawString(p.getUserNumber(), Integer.parseInt(p.getUser_x()), Integer.parseInt(p.getUser_y()));
+        }
     }
 
     //Controla acoes do teclado
@@ -87,29 +92,19 @@ public class Game extends JPanel {
                 x = x + offset;
                 break;
         }
-        Integer x = this.x;
-        Integer y = this.y;
         
-        byte byte_x = x.byteValue();
-        byte byte_y = y.byteValue();
-        
-        System.out.println("Mandando X: " + x + " valor em byte: " + byte_x);
-        System.out.println("Mandando Y: " + y + " valor em byte: " + byte_y);
-        byte[] arrayBytes = new byte[3];
-        
-        arrayBytes[0] = username.byteValue();
-        arrayBytes[1] = byte_x;
-        arrayBytes[2] = byte_y;
-        
-        System.out.println("Nome de usuário mandado: " + arrayBytes[0]);
-        sendMsg(arrayBytes);
+        String msg = "";
+        msg += this.username.toString() + ",";
+        msg += this.x.toString() + ",";
+        msg += this.y.toString();
+        System.out.println("Cliente manda: " + msg + "\n");
+        sendMsg(msg.getBytes());
 
         //Redesenha com a nova posição
         repaint();
     }
     
-    public void sendMsg(byte[] msg) {
-        System.out.println();
+    public void sendMsg(byte[] msg) {        
         try {
             InetAddress address = InetAddress.getByName(MULTICAST_IP_ADDRESS);
             DatagramPacket packet = new DatagramPacket(msg, msg.length, address,
@@ -138,5 +133,28 @@ public class Game extends JPanel {
         //Cria Thread de ouvir mensagem:
         GameListener thread = new GameListener(working_socket, group, players);
         thread.start();
+        
+        try {
+            working_socket = new MulticastSocket(MULTICAST_PORT);
+            group = InetAddress.getByName(MULTICAST_IP_ADDRESS);
+            working_socket.joinGroup(group);
+        } catch (IOException ex) {
+            Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void attEnemy(PlayerModel enemy){
+        boolean checkEqual = false;
+        
+        for(PlayerModel p : players){
+            if(p.getUserNumber().equals(enemy.getUserNumber())){
+                checkEqual = true;
+                p.setUser_x(enemy.getUser_x());
+                p.setUser_y(enemy.getUser_y());
+            }
+        }
+        if(!checkEqual){
+            players.add(enemy);
+        }      
     }
 }
