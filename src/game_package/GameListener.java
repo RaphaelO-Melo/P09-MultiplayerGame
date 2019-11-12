@@ -41,8 +41,7 @@ public class GameListener extends Thread {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             working_socket.receive(packet);          
             String msgS = new String(packet.getData()).trim();
-            String[] userInfo = msgS.split(",");
-            
+            String[] userInfo = msgS.split(",");            
             System.out.println("------- THREAD CLIENTE -------" + "\n" + 
                                "Cliente: " + userInfo[0] + "\n" +
                                "X: " + userInfo[1] + "\n" +

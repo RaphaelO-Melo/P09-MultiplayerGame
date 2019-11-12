@@ -28,6 +28,8 @@ import javax.swing.JPanel;
 
 public class Game extends JPanel {
 
+    static public JFrame frame;
+    
     static private Integer username;
     static private Integer x = 0;
     static private Integer y = 0;
@@ -117,7 +119,7 @@ public class Game extends JPanel {
     }
     
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Mini Canvas Sample");
+        frame = new JFrame("Mini Canvas Sample");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Game mCanvas = new Game();
         frame.add(mCanvas);
@@ -147,10 +149,16 @@ public class Game extends JPanel {
         boolean checkEqual = false;
         
         for(PlayerModel p : players){
-            if(p.getUserNumber().equals(enemy.getUserNumber())){
+            if (p.getUserNumber().equals(enemy.getUserNumber())) {
                 checkEqual = true;
                 p.setUser_x(enemy.getUser_x());
                 p.setUser_y(enemy.getUser_y());
+
+                frame.getGraphics().clearRect(0, 0, frame.getWidth(), frame.getHeight());
+                frame.getGraphics().setColor(Color.black);
+                frame.getGraphics().drawString(username.toString(), x, y);
+                frame.getGraphics().drawString(p.getUserNumber(), Integer.parseInt(p.getUser_x()), Integer.parseInt(p.getUser_y()));
+
             }
         }
         if(!checkEqual){
