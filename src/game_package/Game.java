@@ -276,7 +276,7 @@ public class Game extends JPanel {
         //Inicializa quadrado do jogador usado no desenho e na hitbox
         rect = new Rectangle(x,y,20,20);
         //Cria Thread de ouvir mensagem
-        GameListener thread = new GameListener(working_socket, group, players);
+        GameListener thread = new GameListener(working_socket, group);
         thread.start();         
         //Inicializa jogo
         startGameLoop();

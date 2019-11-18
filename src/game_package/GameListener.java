@@ -1,31 +1,29 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Classe GameListener
+ *
+ * Classe onde é criada a Thread do jogador, esta mesma escuta o grupo esperando
+ * outros integrantes mandarem uma mensagem para tratar a mesma
  */
 package game_package;
 
 import java.awt.Rectangle;
-import java.net.DatagramPacket;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.DatagramPacket;
 import javax.swing.JOptionPane;
+import java.net.MulticastSocket;
 
 /**
- *
- * @author raphael.omelo
+ * @author Raphael Melo
  */
 public class GameListener extends Thread {
-    private MulticastSocket working_socket;
     private InetAddress group;
-    private ArrayList<PlayerModel> players;
-    
-    public GameListener(MulticastSocket working_socket, InetAddress group, ArrayList<PlayerModel> players) {
-        this.working_socket = working_socket;
+    private MulticastSocket working_socket;
+ 
+    //Construtor da classe
+    public GameListener(MulticastSocket working_socket, InetAddress group) {
         this.group = group;
-        this.players = players;
+        this.working_socket = working_socket;
     }
 
     @Override
@@ -35,27 +33,34 @@ public class GameListener extends Thread {
         }
     }
 
-    
+    /**
+     * Método que recebee trata as mensagens recebidas no grupo
+    */
     public void recvMsg() {
         byte[] msg = new byte[1000];
         try {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             working_socket.receive(packet);          
             String msgS = new String(packet.getData()).trim();
-            String[] userInfo = msgS.split(",");  
-            
+            //Separa a string através da vírgula
+            String[] userInfo = msgS.split(",");
             System.out.println("------- THREAD CLIENTE -------" + "\n" + 
                                "Cliente: " + userInfo[0] + "\n" +
                                "X: " + userInfo[1] + "\n" +
                                "Y: " + userInfo[2] + "\n" + 
                                "------------------------------\n");
                       
+            //Cria um retângulo para o modelo do cliente com as informações 
+            //obtidas na mensagem recebida
+            Rectangle rect = new Rectangle(Integer.parseInt(userInfo[1]),
+                                           Integer.parseInt(userInfo[2]),20,20);
+            //Atualiza o inimigo na main class passando o novo modelo de jogador
+            Game.attEnemy(new PlayerModel(userInfo[0],
+                                          userInfo[1],
+                                          userInfo[2], 
+                                          rect));
             
-            Rectangle rect = new Rectangle(Integer.parseInt(userInfo[1]),Integer.parseInt(userInfo[2]),20,20);
-            Game.attEnemy(new PlayerModel(userInfo[0],userInfo[1],userInfo[2], rect));
-                    
-            
-        } catch (Exception err) {
+        } catch (IOException | NumberFormatException err) {
             JOptionPane.showMessageDialog(null, err.getMessage(), null,
                     JOptionPane.PLAIN_MESSAGE, null);
         }
@@ -65,7 +70,7 @@ public class GameListener extends Thread {
         try {
             working_socket.leaveGroup(group);
             working_socket.close();
-        } catch (Exception err) {
+        } catch (IOException err) {
             JOptionPane.showMessageDialog(null, err.getMessage(), null,
                     JOptionPane.PLAIN_MESSAGE, null);
         }
