@@ -65,14 +65,4 @@ public class GameListener extends Thread {
                     JOptionPane.PLAIN_MESSAGE, null);
         }
     }
-    
-    void close() {
-        try {
-            working_socket.leaveGroup(group);
-            working_socket.close();
-        } catch (IOException err) {
-            JOptionPane.showMessageDialog(null, err.getMessage(), null,
-                    JOptionPane.PLAIN_MESSAGE, null);
-        }
-    }
 }

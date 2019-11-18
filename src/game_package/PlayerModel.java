@@ -1,16 +1,16 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Classe PlayerModel
+ * 
+ * Classe responável por criar o modelo de jogador, nela estão as informações
+ * do usuário, como ID, posição e retângulo de colisão/desenho
  */
 package game_package;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 
 /**
  *
- * @author raphael.omelo
+ * @author Raphael Melo
  */
 public class PlayerModel {
 
@@ -18,15 +18,13 @@ public class PlayerModel {
     private String user_x;
     private String user_y;
     private Rectangle rect;
-    private Color color;
-    private boolean colidindo;
 
+    //Construtor da classe
     public PlayerModel(String n, String x, String y, Rectangle rect) {
-        userNumber = n;
         user_x = x;
         user_y = y;
+        userNumber = n;
         this.rect = rect;
-        this.color = Color.BLACK;
     }
 
     public String getUserNumber() {
@@ -56,23 +54,5 @@ public class PlayerModel {
     
     public Rectangle getRect(){
         return this.rect;
-    }
-    
-    public boolean estaColidindo(){
-        return colidindo;
-    }
-    
-    public void setColidindo(boolean newState){
-        if(newState){
-            color = Color.RED;
-        }else{
-            color = Color.BLACK;
-        }
-        
-        this.colidindo = newState;
-    }
-    
-    public Color getColor(){
-        return this.color;
     }
 }
