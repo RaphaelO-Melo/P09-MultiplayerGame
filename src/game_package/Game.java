@@ -44,7 +44,10 @@ public class Game extends JPanel {
     private static final int MULTICAST_PORT = 4447;
     private static final String MULTICAST_IP_ADDRESS = "230.230.231.1";    
 
-    //Construtor da classe
+    /**
+     * Construtor da classe Game, onde suas variáveis 
+     * são iniciadas e o usuário é conectado com o grupo
+    */
     public Game() {
         //Inicia ArrayList dos jogadores
         players = new ArrayList();
@@ -66,7 +69,11 @@ public class Game extends JPanel {
         }
     }
     
-    //Método que pinta os elementos da tela
+    /**
+     * Método que pinta a tela
+     * 
+     * @param g : contexto gráfico 
+    */
     @Override
     public void paint(Graphics g) {
         //Obtem o foco para obter eventos de teclado
@@ -84,20 +91,34 @@ public class Game extends JPanel {
 
         //Desenha todos os outros jogadores
         for (PlayerModel p : players) {
+            //Se os outros jogadores estiverem colidindo com algum outro jogador
+            //ou este próprio, também troca a cor dele
             if(outrosJogadoresColidindo(p)){
                 g.setColor(Color.RED);
             }else{
                 g.setColor(Color.BLACK);
-            }           
-            g.drawRect(p.getRect().x, p.getRect().y, p.getRect().height, p.getRect().width);
-            g.fill3DRect(p.getRect().x, p.getRect().y, p.getRect().height, p.getRect().width, true);
+            }  
+            
+            //Desenha quadrado do outro jogador usando o quadrado de hitox dele
+            g.drawRect(p.getRect().x, p.getRect().y, 
+                       p.getRect().height, p.getRect().width);
+            g.fill3DRect(p.getRect().x, p.getRect().y, 
+                         p.getRect().height, p.getRect().width, true);
+            //Desenha número do usuário
             g.setColor(Color.WHITE);
-            g.drawString(p.getUserNumber(), Integer.parseInt(p.getUser_x()) + 3, Integer.parseInt(p.getUser_y()) + 15);
+            g.drawString(p.getUserNumber(), 
+                         Integer.parseInt(p.getUser_x()) + 3, 
+                         Integer.parseInt(p.getUser_y()) + 15);
         }
     }
 
-    //Controla acoes do teclado
-    public void MoveObject(KeyEvent e) {
+    /**
+     * Método que movimenta o jogador
+     * 
+     * @param e : KeyEvent qu será usado no tratamento para definir a nova
+     * posição do usuário
+    */
+    private void MoveObject(KeyEvent e) {
         int keyCode = e.getKeyCode();
         int offset = 5;
         switch (keyCode) {
@@ -119,88 +140,42 @@ public class Game extends JPanel {
                 break;
         }
         
+        //Configura mensagem que será mandada com as informações do usuário
         String msg = "";
-        msg += this.USER_ID.toString() + ",";
-        msg += this.x.toString() + ",";
-        msg += this.y.toString();
-        //System.out.println("Cliente manda: " + msg + "\n");
+        msg += USER_ID.toString() + ",";
+        msg += x.toString() + ",";
+        msg += y.toString();
         sendMsg(msg.getBytes());
-
-        //Redesenha com a nova posição
+        //Redesenha a tela com a nova posição
         repaint();
     }
     
-    public static void sendMsg(byte[] msg) {        
+    /**
+     * Método que manda a mensagem do usuário para o grupo
+     * 
+     * @param msg : mensagem que será passada 
+    */
+    private static void sendMsg(byte[] msg) {        
         try {
             InetAddress address = InetAddress.getByName(MULTICAST_IP_ADDRESS);
             DatagramPacket packet = new DatagramPacket(msg, msg.length, address,
                     MULTICAST_PORT);
             working_socket.send(packet);
-        } catch (Exception err) {
+        } catch (IOException err) {
             JOptionPane.showMessageDialog(null, err.getMessage(), null,
                     JOptionPane.PLAIN_MESSAGE, null);
         }
     }
     
-    public static void main(String[] args) {
-        Random rnd = new Random();
-        USER_ID = (rnd.nextInt(100));
-        FRAME = new JFrame(USER_ID.toString());
-        FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Game mCanvas = new Game();
-        FRAME.add(mCanvas);
-        FRAME.setSize(700, 700);
-        //Nome do usuario gerado aleatoriamente
-        
-        
-        //Posição inicial do texto
-        x = rnd.nextInt(600);
-        y = rnd.nextInt(600);
-        FRAME.setVisible(true);
-        
-        rect = new Rectangle(x,y,20,20);
-
-        //Cria Thread de ouvir mensagem:
-        GameListener thread = new GameListener(working_socket, group, players);
-        thread.start();       
-        
-        try {
-            working_socket = new MulticastSocket(MULTICAST_PORT);
-            group = InetAddress.getByName(MULTICAST_IP_ADDRESS);
-            working_socket.joinGroup(group);
-        } catch (IOException ex) {
-            Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         
-       startGame();
-    }
-    
-    public static void attEnemy(PlayerModel enemy){
-        boolean checkEqual = false;
-        System.out.println("Atualizando inimigo");
-        
-        if (!enemy.getUserNumber().equals(USER_ID.toString())) {
-            for (PlayerModel p : players) {
-                if (p.getUserNumber().equals(enemy.getUserNumber())) {
-                    checkEqual = true;
-                    p.setUser_x(enemy.getUser_x());
-                    p.setUser_y(enemy.getUser_y());
-                    p.attRect(Integer.parseInt(enemy.getUser_x()), Integer.parseInt(enemy.getUser_y()));
-                    FRAME.repaint();
-                }
-            }
-            if (!checkEqual) {
-                System.out.println("Adicionou inimigo na lista");
-                players.add(enemy);
-            }
-        }
-        
-    }
-    
+    /**
+     * Método que verifica se este jogador colidiu com outros jogadores que 
+     * estão preentes na sessão
+     * 
+     * @return se colidiu
+    */
     public static boolean jogadorColidindo() {
-        
         for (PlayerModel p : players) {
-            if(rect.intersects(p.getRect())){
+            if (rect.intersects(p.getRect())) {
                 playerColor = Color.RED;
                 return true;
             }
@@ -209,11 +184,15 @@ public class Game extends JPanel {
         return false;
     }
     
+    /**
+     * Método que verifica se os outros jogadores colidiram com alguma coisa
+     * @param p :  jogador que será verificado
+     * @return se colidiu com algo 
+    */
     public static boolean outrosJogadoresColidindo(PlayerModel p) {
-        if(rect.intersects(p.getRect())){
+        if (rect.intersects(p.getRect())) {
             return true;
         }
-        
         for (PlayerModel otherP : players) {
             if (!p.getUserNumber().equals(otherP.getUserNumber())) {
                 if (p.getRect().intersects(otherP.getRect())) {
@@ -224,32 +203,83 @@ public class Game extends JPanel {
         return false;
     }
     
-
-    public static void startGame() {
-        //Redesenha com a nova posição
-
+    /**
+     * Método que é chamado pela thread do jogador para atualizar os inimigos,
+     * também é respnsável por adicionar na lista de inimigos um inimigo que
+     * ainda não tenha sido adicionado
+     * 
+     * @param enemy : inimigo que será atualizado
+    */
+    public static void attEnemy(PlayerModel enemy) {
+        boolean checkEqual = false;
+        if (!enemy.getUserNumber().equals(USER_ID.toString())) {
+            for (PlayerModel p : players) {
+                if (p.getUserNumber().equals(enemy.getUserNumber())) {
+                    checkEqual = true;
+                    p.setUser_x(enemy.getUser_x());
+                    p.setUser_y(enemy.getUser_y());
+                    p.attRect(Integer.parseInt(enemy.getUser_x()),
+                            Integer.parseInt(enemy.getUser_y()));
+                    FRAME.repaint();
+                }
+            }
+            if (!checkEqual) {
+                players.add(enemy);
+            }
+        }
+    }
+    
+    /**
+     * Método que contém o gameloop do jogo onde o jogo será atualizado
+    */
+    public static void startGameLoop() {
         while (true) {
+            //Verifica se jogador está colidindo com algo
+            if (jogadorColidindo()) {
+                playerColor = Color.RED;
+            } else {
+                playerColor = Color.BLACK;
+            }
+            //Manda uma mensagem para todo o grupo atualizando sua posição atual
             String msg = "";
             msg += USER_ID.toString() + ",";
             msg += x.toString() + ",";
             msg += y.toString();
-            //System.out.println("Cliente manda: " + msg + "\n");
             sendMsg(msg.getBytes());
             FRAME.repaint();
-           if(jogadorColidindo()){
-               playerColor = Color.RED;
-           }else{
-               playerColor = Color.BLACK;
-           } 
-            
-            
-            
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
+               Logger.getLogger(Game.class.getName()).log(Level.SEVERE,null,ex);
             }
         }
+    }
+
+    /**
+     * Método main da classe
+     * @param args 
+    */
+    public static void main(String[] args) {
+        Random rnd = new Random();
+        //Define ID aleatório do usuário entre 0 e 99
+        USER_ID = (rnd.nextInt(100));
+        //Inicializa JFrame
+        FRAME = new JFrame("Janela do jogador: " + USER_ID.toString());
+        FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Game mCanvas = new Game();
+        FRAME.add(mCanvas);
+        FRAME.setSize(700, 700);
+        //Sorteia o aparecimento do jogador na tela
+        x = rnd.nextInt(600);
+        y = rnd.nextInt(600);
+        FRAME.setVisible(true);
+        //Inicializa quadrado do jogador usado no desenho e na hitbox
+        rect = new Rectangle(x,y,20,20);
+        //Cria Thread de ouvir mensagem
+        GameListener thread = new GameListener(working_socket, group, players);
+        thread.start();         
+        //Inicializa jogo
+        startGameLoop();
     }
 }
 
