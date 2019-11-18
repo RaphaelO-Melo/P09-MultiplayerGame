@@ -5,6 +5,7 @@
  */
 package game_package;
 
+import java.awt.Rectangle;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -41,14 +42,17 @@ public class GameListener extends Thread {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             working_socket.receive(packet);          
             String msgS = new String(packet.getData()).trim();
-            String[] userInfo = msgS.split(",");            
+            String[] userInfo = msgS.split(",");  
+            /*
             System.out.println("------- THREAD CLIENTE -------" + "\n" + 
                                "Cliente: " + userInfo[0] + "\n" +
                                "X: " + userInfo[1] + "\n" +
                                "Y: " + userInfo[2] + "\n" + 
                                "------------------------------\n");
+            */          
             
-            Game.attEnemy(new PlayerModel(userInfo[0],userInfo[1],userInfo[2]));
+            Rectangle rect = new Rectangle(Integer.parseInt(userInfo[1]),Integer.parseInt(userInfo[2]),20,20);
+            Game.attEnemy(new PlayerModel(userInfo[0],userInfo[1],userInfo[2], rect));
                     
             
         } catch (Exception err) {

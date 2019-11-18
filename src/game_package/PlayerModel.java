@@ -4,6 +4,9 @@
  * and open the template in the editor.
  */
 package game_package;
+
+import java.awt.Rectangle;
+
 /**
  *
  * @author raphael.omelo
@@ -13,11 +16,13 @@ public class PlayerModel {
     private String userNumber;
     private String user_x;
     private String user_y;
+    private Rectangle rect;
 
-    public PlayerModel(String n, String x, String y) {
+    public PlayerModel(String n, String x, String y, Rectangle rect) {
         userNumber = n;
         user_x = x;
         user_y = y;
+        this.rect = rect;
     }
 
     public String getUserNumber() {
@@ -38,5 +43,14 @@ public class PlayerModel {
     
     public void setUser_y(String y){
         this.user_y = y;        
+    }
+    
+    public void attRect(int x, int y){
+        this.rect.x = x;
+        this.rect.y = y;
+    }
+    
+    public Rectangle getRect(){
+        return this.rect;
     }
 }
