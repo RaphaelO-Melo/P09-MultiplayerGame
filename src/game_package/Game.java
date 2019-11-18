@@ -42,6 +42,8 @@ public class Game extends JPanel {
     static final String MULTICAST_IP_ADDRESS = "230.230.231.1";
     static InetAddress group = null;
     
+    static private int colorCONT;
+    
     public static ArrayList<PlayerModel> players;
     
 
@@ -69,7 +71,7 @@ public class Game extends JPanel {
         //Obtem o foco para obter eventos de teclado
         requestFocus();
         g.clearRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.black);
+        g.setColor(getColor());
         //Desenha o nome do usuario
         g.drawRect(rect.x, rect.y, rect.height, rect.width);
         g.fill3DRect(rect.x, rect.y, rect.height, rect.width, true);
@@ -77,7 +79,7 @@ public class Game extends JPanel {
         g.drawString(username.toString(), x+3, y+15);
 
         for (PlayerModel p : players) {
-            g.setColor(Color.black);
+            g.setColor(getColor());
             g.drawRect(p.getRect().x, p.getRect().y, p.getRect().height, p.getRect().width);
             g.fill3DRect(p.getRect().x, p.getRect().y, p.getRect().height, p.getRect().width, true);
             g.setColor(Color.WHITE);
@@ -120,7 +122,7 @@ public class Game extends JPanel {
         checkCollision();
     }
     
-    public void sendMsg(byte[] msg) {        
+    public static void sendMsg(byte[] msg) {        
         try {
             InetAddress address = InetAddress.getByName(MULTICAST_IP_ADDRESS);
             DatagramPacket packet = new DatagramPacket(msg, msg.length, address,
@@ -137,21 +139,25 @@ public class Game extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Game mCanvas = new Game();
         frame.add(mCanvas);
-        frame.setSize(300, 200);
+        frame.setSize(700, 700);
         //Nome do usuario gerado aleatoriamente
         Random rnd = new Random();
         username = (rnd.nextInt(100));
         userName = username.toString();
         //Posição inicial do texto
-        x = 300 / 2;
-        y = 200 / 2;
+        x = rnd.nextInt(600);
+        y = rnd.nextInt(600);
+        
+        
+        
+        
         frame.setVisible(true);
         
         rect = new Rectangle(x,y,20,20);
 
         //Cria Thread de ouvir mensagem:
         GameListener thread = new GameListener(working_socket, group, players);
-        thread.start();
+        thread.start();       
         
         try {
             working_socket = new MulticastSocket(MULTICAST_PORT);
@@ -160,10 +166,13 @@ public class Game extends JPanel {
         } catch (IOException ex) {
             Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
+         
+       startGame();
     }
     
     public static void attEnemy(PlayerModel enemy){
         boolean checkEqual = false;
+        System.out.println("Atualizando inimigo");
         
         if (!enemy.getUserNumber().equals(userName)) {
             for (PlayerModel p : players) {
@@ -176,16 +185,84 @@ public class Game extends JPanel {
                 }
             }
             if (!checkEqual) {
+                System.out.println("Adicionou inimigo na lista");
                 players.add(enemy);
             }
         }
+        
+        checkCollision();
     }
     
     public static void checkCollision() {
         for (PlayerModel p : players) {
             if(rect.intersects(p.getRect())){
                 System.out.println("Colisão detectada");
+                colorCONT++;
+                if(colorCONT == 5){
+                    colorCONT = 0;
+                }
+            }
+        }
+    }
+    
+    public static Color getColor(){
+        Color color = null;
+        switch(colorCONT){
+            case 0:
+                color = Color.BLACK;
+                break;
+            case 1:
+                color = Color.RED;
+                break;
+            case 2:
+                color = Color.GREEN;
+                break;
+            case 3:
+                color = Color.ORANGE;
+                break;
+            case 4:
+                color = Color.MAGENTA;
+                break;
+        }
+        
+        return color;
+    }
+
+    public static void startGame() {
+        //Redesenha com a nova posição
+
+        while (true) {
+            String msg = "";
+            msg += username.toString() + ",";
+            msg += x.toString() + ",";
+            msg += y.toString();
+            //System.out.println("Cliente manda: " + msg + "\n");
+            sendMsg(msg.getBytes());
+            frame.repaint();
+            checkCollision();
+            
+            System.out.println(working_socket.isConnected());
+
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//x: 0, 1200 y: 0, 600
